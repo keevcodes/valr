@@ -1,6 +1,5 @@
 import { useShallow } from "zustand/react/shallow";
 import { usePaymentsStore } from "./store/paymentsStore";
-import { Payment } from "./types/payment";
 import { calculateTotal } from "./utils/amount";
 import { useEffect } from "react";
 
@@ -36,12 +35,6 @@ export function useApp() {
   };
 
   const { fee, total } = calculateTotal(checkoutConfig.amount, 10);
-
-  const handlePaymentComplete = (payment: Payment) => {
-    setCompletedPayment(payment);
-    setIsProcessing(false);
-    setError(null);
-  };
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
@@ -80,7 +73,6 @@ export function useApp() {
     setPayment,
     completedPayment,
     handleError,
-    handlePaymentComplete,
     handleRetry,
     checkoutConfig,
     fee,

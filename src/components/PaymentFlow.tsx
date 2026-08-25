@@ -1,4 +1,3 @@
-import { Payment } from "../types/payment";
 import { CheckoutForm } from "./CheckoutForm";
 
 import { usePaymentFlow } from "./hooks/usePaymentFlow";
@@ -9,7 +8,6 @@ interface PaymentFlowProps {
   fee: number;
   currency: string;
   description?: string;
-  onComplete: (payment: Payment) => void;
   onError: (error: string) => void;
 }
 
@@ -19,11 +17,9 @@ export function PaymentFlow({
   description,
   total,
   fee,
-  onComplete,
   onError,
 }: PaymentFlowProps) {
   const { handleSubmit, isProcessing, payment } = usePaymentFlow({
-    onComplete,
     onError,
     total,
     description,

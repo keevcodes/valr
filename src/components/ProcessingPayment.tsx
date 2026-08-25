@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Payment } from "../types/payment";
 import { useProccessingPayment } from "./hooks/useProcessingPayment";
 
@@ -6,7 +7,8 @@ type ProcessingPaymentProps = {
 };
 
 export function ProcessingPayment({ payment }: ProcessingPaymentProps) {
-  const { isCancelling, cancelPaymentHandler } = useProccessingPayment();
+  const { cancelPaymentHandler } = useProccessingPayment();
+  const [isCancelling, setIsCancelling] = useState(false);
 
   return (
     <div>
@@ -26,7 +28,10 @@ export function ProcessingPayment({ payment }: ProcessingPaymentProps) {
         <button
           aria-label="cancel payment"
           className="mt-4 text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer border border-gray-300 rounded px-4 py-2 w-full h-8 outline outline-solid"
-          onClick={() => cancelPaymentHandler(payment.id)}
+          onClick={() => {
+            setIsCancelling(true);
+            cancelPaymentHandler(payment.id);
+          }}
           disabled={isCancelling || payment.status === "canceled"}
           type="button"
         >

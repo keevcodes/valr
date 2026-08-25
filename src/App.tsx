@@ -21,7 +21,6 @@ function App() {
     error,
     completedPayment,
     handleError,
-    handlePaymentComplete,
     handleRetry,
     fee,
     total,
@@ -34,10 +33,7 @@ function App() {
       <Header />
       <main className="checkout-container">
         {isReturningFrom3DS && !completedPayment && (
-          <ReturnUrlHandler
-            onPaymentConfirmed={handlePaymentComplete}
-            onError={handleError}
-          />
+          <ReturnUrlHandler onError={handleError} />
         )}
         {error && (
           <div className="error-message">
@@ -48,7 +44,7 @@ function App() {
           </div>
         )}
 
-        {(completedPayment || isProcessing || payment) && !error && (
+        {(completedPayment || isProcessing || payment) && (
           <PaymentStatus
             onRetry={handleRetry}
             error={error}
@@ -63,7 +59,6 @@ function App() {
             fee={fee}
             currency={checkoutConfig.currency}
             description={checkoutConfig.description}
-            onComplete={handlePaymentComplete}
             onError={handleError}
           />
         )}

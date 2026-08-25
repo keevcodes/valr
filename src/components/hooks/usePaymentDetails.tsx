@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  clearPaymentFromStorage,
+  getPaymentIdFromUrlParamsOrLocalStorage,
+} from "../../utils/localStorageHelpers";
 
 export function usePaymentDetails() {
   const [copySuccess, setCopySuccess] = useState(false);
@@ -14,6 +18,13 @@ export function usePaymentDetails() {
       console.error("Failed to copy: ", err);
     }
   };
+
+  useEffect(() => {
+    const paymentId = getPaymentIdFromUrlParamsOrLocalStorage();
+    if (paymentId) {
+      clearPaymentFromStorage(paymentId);
+    }
+  }, []);
 
   return {
     copySuccess,

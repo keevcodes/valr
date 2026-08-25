@@ -1,8 +1,20 @@
-import { useState } from "react";
 import { cancelPayment } from "../../api/payments";
+import { usePaymentsStore } from "../../store/paymentsStore";
+import { useShallow } from "zustand/shallow";
 
 export function useProccessingPayment() {
-  const [isCancelling, setIsCancelling] = useState(false);
+  const { isCancelling, setIsCancelling } = usePaymentsStore(
+    useShallow((state) => ({
+      isCancelling: state.isCancelling,
+      setIsCancelling: state.setIsCancelling,
+    })),
+  );
+
+  const { payment } = usePaymentsStore(
+    useShallow((state) => ({
+      payment: state.payment,
+    })),
+  );
 
   const cancelPaymentHandler = async (paymentId: string) => {
     try {
@@ -18,5 +30,6 @@ export function useProccessingPayment() {
   return {
     cancelPaymentHandler,
     isCancelling,
+    payment,
   };
 }

@@ -30,6 +30,7 @@ export function CheckoutForm({
     setExpiryMonth,
     setExpiryYear,
     formatCardNumber,
+    isProcessing,
   } = useCheckoutForm(onSubmit);
 
   return (
@@ -130,7 +131,7 @@ export function CheckoutForm({
         </div>
       </div>
 
-      <button type="submit" className="pay-button">
+      <button type="submit" className="pay-button" disabled={isProcessing}>
         Pay {formatAmount(total, currency)}
       </button>
 

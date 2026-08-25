@@ -1,6 +1,6 @@
 import { Payment } from "../types/payment";
 
-export function getPaymentIdFromParamsOrStorage(): string | null {
+export function getPaymentIdFromUrlParamsOrLocalStorage(): string | null {
   const params = new URLSearchParams(window.location.search);
   const paymentIdFromURL = params.get("payment_id");
 
@@ -8,26 +8,29 @@ export function getPaymentIdFromParamsOrStorage(): string | null {
     return paymentIdFromURL;
   }
 
-  const paymentFromStorage = localStorage.getItem("payments-storage");
+  if (!paymentIdFromURL) {
+    const paymentId = localStorage.getItem("paymentId");
 
-  if (paymentFromStorage) {
-    const parsedPayment = JSON.parse(paymentFromStorage);
-    return parsedPayment?.payment?.id || null;
+    if (paymentId) {
+      return paymentId;
+    }
   }
 
   return null;
 }
 
-export function getPaymentFromStorage(): Payment | null {
-  const payment = localStorage.getItem("payments-storage");
+export function getPaymentFromStorage(paymentId: string): Payment | null {
+  const payment = localStorage.getItem(paymentId);
 
   return payment ? JSON.parse(payment) : null;
 }
 
 export function setPaymentInStorage(payment: Payment): void {
-  localStorage.setItem("payments-storage", JSON.stringify(payment));
+  localStorage.setItem(payment.id, JSON.stringify(payment));
+  localStorage.setItem("paymentId", payment.id);
 }
 
-export function clearPaymentFromStorage(): void {
-  localStorage.removeItem("payments-storage");
+export function clearPaymentFromStorage(paymentId: string): void {
+  localStorage.removeItem("paymentId");
+  localStorage.removeItem(paymentId);
 }

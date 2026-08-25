@@ -1,10 +1,9 @@
 import { useShallow } from "zustand/react/shallow";
 import { createPayment, getPaymentStatus } from "../../api/payments";
 import { usePaymentsStore } from "../../store/paymentsStore";
-import { CardDetails, Payment } from "../../types/payment";
+import { CardDetails } from "../../types/payment";
 
 interface UsePaymentFlow {
-  onComplete: (payment: Payment) => void;
   onError: (error: string) => void;
   total: number;
   description?: string;
@@ -12,21 +11,26 @@ interface UsePaymentFlow {
 }
 
 export function usePaymentFlow({
-  onComplete,
   onError,
   total,
   description,
   currency,
 }: UsePaymentFlow) {
-  const { setPayment, setIsProcessing, isProcessing, payment } =
-    usePaymentsStore(
-      useShallow((state) => ({
-        payment: state.payment,
-        setPayment: state.setPayment,
-        setIsProcessing: state.setIsProcessing,
-        isProcessing: state.isProcessing,
-      })),
-    );
+  const {
+    setPayment,
+    setIsProcessing,
+    isProcessing,
+    payment,
+    handleCompletePayment,
+  } = usePaymentsStore(
+    useShallow((state) => ({
+      payment: state.payment,
+      setPayment: state.setPayment,
+      setIsProcessing: state.setIsProcessing,
+      isProcessing: state.isProcessing,
+      handleCompletePayment: state.handleCompletePayment,
+    })),
+  );
 
   const pollForCompletion = async (paymentId: string) => {
     // Simple polling — check every 2 seconds, max 30 seconds
@@ -40,19 +44,19 @@ export function usePaymentFlow({
         const updatedPayment = await getPaymentStatus(paymentId);
 
         if (updatedPayment.status === "succeeded") {
-          onComplete(updatedPayment);
+          handleCompletePayment(updatedPayment);
           return;
         }
 
         if (updatedPayment.status === "failed") {
-          onComplete(updatedPayment);
+          handleCompletePayment(updatedPayment);
           setIsProcessing(false);
           return;
         }
 
         if (updatedPayment.status === "canceled") {
-          onComplete(updatedPayment);
           setIsProcessing(false);
+          handleCompletePayment(updatedPayment);
           return;
         }
 
@@ -95,9 +99,9 @@ export function usePaymentFlow({
         // Poll for final status
         pollForCompletion(newPayment.id);
       } else if (newPayment.status === "succeeded") {
-        onComplete(newPayment);
+        handleCompletePayment(newPayment);
       } else {
-        onComplete(newPayment);
+        handleCompletePayment(newPayment);
       }
     } catch (err) {
       onError(err instanceof Error ? err.message : "Payment failed");

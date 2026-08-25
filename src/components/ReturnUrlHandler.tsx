@@ -1,9 +1,6 @@
-import { Payment } from "../types/payment";
-
 import { useReturnUrlHandler } from "./hooks/useReturnUrlHandler";
 
 interface ReturnUrlHandlerProps {
-  onPaymentConfirmed: (payment: Payment) => void;
   onError: (error: string) => void;
 }
 
@@ -23,25 +20,17 @@ interface ReturnUrlHandlerProps {
  * - If URL params are missing/malformed, user is stuck
  * - No recovery mechanism for lost state
  */
-export function ReturnUrlHandler({
-  onPaymentConfirmed,
-  onError,
-}: ReturnUrlHandlerProps) {
-  const { isConfirming, payment } = useReturnUrlHandler({
+export function ReturnUrlHandler({ onError }: ReturnUrlHandlerProps) {
+  const { payment } = useReturnUrlHandler({
     onError,
-    onPaymentConfirmed,
   });
 
-  if (isConfirming) {
-    return (
-      <div className="confirming-payment">
-        <div className="spinner" />
-        <h2>Confirming Payment</h2>
-        <p>Please wait while we confirm your payment...</p>
-        {payment && <p className="payment-id">Payment ID: {payment.id}</p>}
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <div className="confirming-payment">
+      <div className="spinner" />
+      <h2>Confirming Payment</h2>
+      <p>Please wait while we confirm your payment...</p>
+      {payment && <p className="payment-id">Payment ID: {payment.id}</p>}
+    </div>
+  );
 }

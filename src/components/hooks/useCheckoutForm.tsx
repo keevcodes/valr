@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { CardDetails } from "../../types/payment";
+import { usePaymentsStore } from "../../store/paymentsStore";
+import { useShallow } from "zustand/shallow";
 
 export function useCheckoutForm(onSubmit: (cardDetails: CardDetails) => void) {
   const [cardNumber, setCardNumber] = useState("");
@@ -7,6 +9,12 @@ export function useCheckoutForm(onSubmit: (cardDetails: CardDetails) => void) {
   const [expiryYear, setExpiryYear] = useState("");
   const [cvc, setCvc] = useState("");
   const [cardholderName, setCardholderName] = useState("");
+
+  const { isProcessing } = usePaymentsStore(
+    useShallow((state) => ({
+      isProcessing: state.isProcessing,
+    })),
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,8 +26,6 @@ export function useCheckoutForm(onSubmit: (cardDetails: CardDetails) => void) {
       cvc,
       name: cardholderName,
     };
-
-    console.log("Processing payment with card:", cardDetails);
 
     onSubmit(cardDetails);
   };
@@ -43,5 +49,6 @@ export function useCheckoutForm(onSubmit: (cardDetails: CardDetails) => void) {
     setCvc,
     cvc,
     expiryYear,
+    isProcessing,
   };
 }

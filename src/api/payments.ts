@@ -1,5 +1,9 @@
 import { Payment, CreatePaymentRequest, PaymentStatus } from "../types/payment";
-import { setPaymentInStorage } from "../utils/localStorageHelpers";
+import {
+  getPaymentFromStorage,
+  getPaymentIdFromUrlParamsOrLocalStorage,
+  setPaymentInStorage,
+} from "../utils/localStorageHelpers";
 
 // Simulated payment storage (in-memory for demo purposes)
 const payments: Map<string, Payment> = new Map();
@@ -49,19 +53,25 @@ export async function createPayment(
     setPaymentInStorage(payment);
   }
 
-  payments.set(payment.id, payment);
+  setPaymentInStorage(payment);
 
   // Simulate async processing for non-3DS payments
   if (outcome !== "requires_action") {
     setTimeout(
       () => {
-        const p = payments.get(payment.id);
+        const paymentId = getPaymentIdFromUrlParamsOrLocalStorage();
 
-        if (p && p.status === "processing") {
-          p.status = outcome;
-          p.updatedAt = new Date().toISOString();
-          if (outcome === "failed") {
-            p.errorMessage = "Payment was declined by the issuer";
+        if (paymentId) {
+          const p = getPaymentFromStorage(paymentId);
+
+          if (p && p.status === "processing") {
+            p.status = outcome;
+            p.updatedAt = new Date().toISOString();
+            if (outcome === "failed") {
+              p.errorMessage = "Payment was declined by the issuer";
+            }
+
+            setPaymentInStorage(p);
           }
         }
       },
@@ -79,7 +89,7 @@ export async function createPayment(
 export async function getPaymentStatus(paymentId: string): Promise<Payment> {
   await delay(200 + Math.random() * 300);
 
-  const payment = payments.get(paymentId);
+  const payment = getPaymentFromStorage(paymentId);
 
   if (!payment) {
     throw new Error("Payment not found");
@@ -91,19 +101,15 @@ export async function getPaymentStatus(paymentId: string): Promise<Payment> {
 /**
  * Confirm payment after 3DS challenge
  */
-export async function confirmPayment(paymentId: string): Promise<Payment> {
+export async function confirmPayment(payment: Payment): Promise<Payment> {
   await delay(500 + Math.random() * 500);
-
-  const payment = payments.get(paymentId);
 
   if (!payment) {
     throw new Error("Payment not found");
   }
 
-  // set the error message to the payment instead of throwing.
-  // running locally, the use effect gets called twice which causes false failures
   if (payment.status === "succeeded") {
-    payment.errorMessage = "Payment does not require confirmation";
+    throw new Error("Payment does not require confirmation");
   }
 
   // 80% success rate after 3DS
@@ -125,7 +131,7 @@ export async function confirmPayment(paymentId: string): Promise<Payment> {
 export async function cancelPayment(paymentId: string): Promise<Payment> {
   await delay(300);
 
-  const payment = payments.get(paymentId);
+  const payment = getPaymentFromStorage(paymentId);
 
   if (!payment) {
     throw new Error("Payment not found");
@@ -138,12 +144,14 @@ export async function cancelPayment(paymentId: string): Promise<Payment> {
   payment.status = "canceled";
   payment.updatedAt = new Date().toISOString();
 
+  setPaymentInStorage(payment);
+
   return { ...payment };
 }
 
 // For testing/demo: seed a payment that can be "found" after redirect
 export function seedPayment(payment: Payment): void {
-  payments.set(payment.id, payment);
+  setPaymentInStorage(payment);
 }
 
 // For testing: clear all payments
